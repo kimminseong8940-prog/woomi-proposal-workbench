@@ -44,6 +44,9 @@ const el = {
   btnPublish: document.getElementById("btn-publish"),
   btnTeamRefresh: document.getElementById("btn-team-refresh"),
   btnSettings: document.getElementById("btn-settings"),
+  btnSidebarToggle: document.getElementById("btn-sidebar-toggle"),
+  btnSidebarClose: document.getElementById("btn-sidebar-close"),
+  shell: document.getElementById("shell"),
   importFile: document.getElementById("import-file"),
   settingsDialog: document.getElementById("settings-dialog"),
   settingsForm: document.getElementById("settings-form"),
@@ -52,6 +55,28 @@ const el = {
   setBranch: document.getElementById("set-branch"),
   setToken: document.getElementById("set-token"),
 };
+
+const SIDEBAR_KEY = "woomi-sidebar-open-v1";
+
+function isSidebarOpen() {
+  const saved = localStorage.getItem(SIDEBAR_KEY);
+  // 첫 실행(값 없음) → 목록 연 상태
+  if (saved == null) return true;
+  return saved === "1";
+}
+
+function setSidebarOpen(open) {
+  localStorage.setItem(SIDEBAR_KEY, open ? "1" : "0");
+  el.shell?.classList.toggle("sidebar-collapsed", !open);
+  if (el.btnSidebarToggle) {
+    el.btnSidebarToggle.setAttribute("aria-expanded", open ? "true" : "false");
+    el.btnSidebarToggle.title = open ? "진행 중 프로젝트 목록 닫기" : "진행 중 프로젝트 목록 열기";
+  }
+}
+
+function toggleSidebar() {
+  setSidebarOpen(!isSidebarOpen());
+}
 
 let state = loadState();
 let activeId = state.activeId;
@@ -661,6 +686,10 @@ el.settingsForm.addEventListener("submit", (ev) => {
   }
 });
 
+el.btnSidebarToggle?.addEventListener("click", toggleSidebar);
+el.btnSidebarClose?.addEventListener("click", () => setSidebarOpen(false));
+
+setSidebarOpen(isSidebarOpen());
 renderAll();
 refreshTeamList();
 teamTimer = setInterval(refreshTeamList, 60000);
