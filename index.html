@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>우미 제안서 제작 워크벤치</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div class="brand">
+        <p class="brand-name">우미건설 · 도시정비</p>
+        <h1>제안서 제작 워크벤치</h1>
+        <p class="brand-sub">경쟁사 기준선 체크 → 챕터 골격 채우기 (사업장·경쟁사 미정이어도 사용 가능)</p>
+      </div>
+      <div class="top-actions">
+        <button type="button" id="btn-export" class="btn ghost">JSON 내보내기</button>
+        <label class="btn ghost file-btn">
+          JSON 가져오기
+          <input type="file" id="import-file" accept="application/json,.json" hidden />
+        </label>
+        <button type="button" id="btn-new" class="btn">새 프로젝트</button>
+      </div>
+    </header>
+
+    <section class="project-bar">
+      <label>
+        프로젝트
+        <select id="project-select"></select>
+      </label>
+      <label>
+        사업장명
+        <input id="meta-site" type="text" placeholder="미정 / 추후 기입" />
+      </label>
+      <label>
+        예상 경쟁사
+        <input id="meta-rivals" type="text" placeholder="미정 / 예: 현대·GS" />
+      </label>
+      <label>
+        핵심 키워드 (1단어)
+        <input id="meta-keyword" type="text" placeholder="예: TRUST" />
+      </label>
+      <label>
+        담당
+        <input id="meta-owner" type="text" placeholder="이름" />
+      </label>
+      <p class="save-hint" id="save-hint">자동 저장됨</p>
+    </section>
+
+    <nav class="tabs" role="tablist">
+      <button type="button" class="tab active" data-tab="a">A. 기준선 체크리스트</button>
+      <button type="button" class="tab" data-tab="b">B. 챕터 골격</button>
+      <button type="button" class="tab" data-tab="summary">요약</button>
+    </nav>
+
+    <main>
+      <section id="panel-a" class="panel active"></section>
+      <section id="panel-b" class="panel"></section>
+      <section id="panel-summary" class="panel"></section>
+    </main>
+
+    <footer class="foot">
+      <p>데이터는 이 브라우저(로컬)에 저장됩니다. 팀원과 공유하려면 <strong>JSON 내보내기</strong> 후 전달하세요.</p>
+    </footer>
+  </div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
