@@ -43,11 +43,11 @@ function persist() {
   const project = current();
   if (project) project.updatedAt = new Date().toISOString();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  el.saveHint.textContent = "저장됨 " + new Date().toLocaleTimeString("ko-KR");
+  el.saveHint.textContent = "자동 저장됨 " + new Date().toLocaleTimeString("ko-KR");
 }
 
 function scheduleSave() {
-  el.saveHint.textContent = "저장 중…";
+  el.saveHint.textContent = "자동 저장 중…";
   clearTimeout(saveTimer);
   saveTimer = setTimeout(persist, 250);
 }
