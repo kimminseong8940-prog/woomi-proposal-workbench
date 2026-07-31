@@ -1,20 +1,21 @@
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+@import url("https://cdn.jsdelivr.net/npm/font-kopubworld@1.0/dotum.min.css");
 
 :root {
-  --bg: #e8e4dc;
-  --bg-deep: #d4cfc4;
+  --bg: #ffffff;
   --ink: #1a221c;
   --muted: #5c6560;
-  --line: #b8b2a6;
-  --panel: #f4f1ea;
+  --line: #d8d8d8;
+  --panel: #ffffff;
   --accent: #0d5c4d;
-  --accent-soft: #c5ddd6;
+  --accent-soft: #e8f2ef;
   --warn: #8a4b12;
   --danger: #7a2e2e;
   --ok: #1f5c38;
-  --shadow: 0 12px 40px rgba(26, 34, 28, 0.08);
-  --font: "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
-  --display: "Georgia", "Apple SD Gothic Neo", serif;
+  --shadow: 0 1px 0 rgba(26, 34, 28, 0.04);
+  --font: "KoPubWorld Dotum", "Malgun Gothic", sans-serif;
+  --w-light: 300;
+  --w-medium: 400;
+  --w-bold: 700;
 }
 
 * { box-sizing: border-box; }
@@ -22,10 +23,9 @@
 body {
   margin: 0;
   font-family: var(--font);
+  font-weight: var(--w-light);
   color: var(--ink);
-  background:
-    radial-gradient(1200px 500px at 10% -10%, #cfdcd6 0%, transparent 55%),
-    linear-gradient(180deg, #efebe3 0%, var(--bg) 40%, var(--bg-deep) 100%);
+  background: var(--bg);
   min-height: 100vh;
 }
 
@@ -49,14 +49,14 @@ body {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--accent);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 
 .brand h1 {
   margin: 0;
-  font-family: var(--display);
+  font-family: var(--font);
   font-size: clamp(1.6rem, 3vw, 2.2rem);
-  font-weight: 600;
+  font-weight: var(--w-bold);
   line-height: 1.15;
 }
 
@@ -64,6 +64,7 @@ body {
   margin: 8px 0 0;
   color: var(--muted);
   font-size: 0.92rem;
+  font-weight: var(--w-light);
   max-width: 42rem;
 }
 
@@ -83,7 +84,7 @@ body {
   border-radius: 4px;
   font: inherit;
   font-size: 0.88rem;
-  font-weight: 600;
+  font-weight: var(--w-medium);
   cursor: pointer;
 }
 
@@ -114,7 +115,7 @@ body {
   flex-direction: column;
   gap: 4px;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--muted);
   letter-spacing: 0.02em;
 }
@@ -125,10 +126,11 @@ body {
 .row-select,
 .notes {
   font: inherit;
+  font-weight: var(--w-medium);
   padding: 0.55rem 0.65rem;
   border: 1px solid var(--line);
   border-radius: 4px;
-  background: #fffef9;
+  background: #ffffff;
   color: var(--ink);
 }
 
@@ -137,7 +139,7 @@ body {
   align-self: center;
   font-size: 0.78rem;
   color: var(--ok);
-  font-weight: 600;
+  font-weight: var(--w-medium);
   white-space: nowrap;
 }
 
@@ -154,7 +156,7 @@ body {
   background: transparent;
   padding: 0.75rem 1rem;
   font: inherit;
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--muted);
   cursor: pointer;
   border-bottom: 2px solid transparent;
@@ -189,13 +191,15 @@ body {
 .section-head h2 {
   margin: 0;
   font-size: 1rem;
-  font-family: var(--display);
+  font-family: var(--font);
+  font-weight: var(--w-bold);
 }
 
 .section-head p {
   margin: 0;
   font-size: 0.8rem;
   color: var(--muted);
+  font-weight: var(--w-light);
 }
 
 .table-wrap { overflow-x: auto; }
@@ -218,17 +222,18 @@ th {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--muted);
-  background: rgba(255,255,255,0.45);
+  font-weight: var(--w-bold);
+  background: #fafafa;
 }
 
-td.item { font-weight: 600; min-width: 9rem; }
-td.baseline { color: var(--muted); min-width: 12rem; font-size: 0.82rem; }
+td.item { font-weight: var(--w-medium); min-width: 9rem; }
+td.baseline { color: var(--muted); min-width: 12rem; font-size: 0.82rem; font-weight: var(--w-light); }
 
 .status-미정 { color: var(--muted); }
-.status-포함 { color: var(--ok); font-weight: 700; }
-.status-미포함 { color: var(--danger); font-weight: 700; }
+.status-포함 { color: var(--ok); font-weight: var(--w-bold); }
+.status-미포함 { color: var(--danger); font-weight: var(--w-bold); }
 .status-해당없음 { color: var(--muted); }
-.status-차별화카드 { color: var(--warn); font-weight: 700; }
+.status-차별화카드 { color: var(--warn); font-weight: var(--w-bold); }
 
 .stack {
   display: grid;
@@ -247,17 +252,18 @@ td.baseline { color: var(--muted); min-width: 12rem; font-size: 0.82rem; }
   flex-direction: column;
   gap: 4px;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--muted);
 }
 
 .field textarea,
 .field input {
   font: inherit;
+  font-weight: var(--w-medium);
   padding: 0.55rem 0.65rem;
   border: 1px solid var(--line);
   border-radius: 4px;
-  background: #fffef9;
+  background: #ffffff;
   min-height: 2.4rem;
 }
 
@@ -278,7 +284,8 @@ td.baseline { color: var(--muted); min-width: 12rem; font-size: 0.82rem; }
 }
 
 .stat .n {
-  font-family: var(--display);
+  font-family: var(--font);
+  font-weight: var(--w-bold);
   font-size: 1.8rem;
   line-height: 1;
   margin: 0 0 6px;
@@ -288,16 +295,17 @@ td.baseline { color: var(--muted); min-width: 12rem; font-size: 0.82rem; }
   margin: 0;
   font-size: 0.8rem;
   color: var(--muted);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 
 .foot {
   margin-top: 20px;
   color: var(--muted);
   font-size: 0.82rem;
+  font-weight: var(--w-light);
 }
 
-.foot strong { color: var(--ink); }
+.foot strong { color: var(--ink); font-weight: var(--w-bold); }
 
 @media (max-width: 960px) {
   .project-bar {

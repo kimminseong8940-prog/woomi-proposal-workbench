@@ -15,9 +15,9 @@
         <p class="brand-sub">경쟁사 기준선 체크 → 챕터 골격 채우기 (사업장·경쟁사 미정이어도 사용 가능)</p>
       </div>
       <div class="top-actions">
-        <button type="button" id="btn-export" class="btn ghost">JSON 내보내기</button>
-        <label class="btn ghost file-btn">
-          JSON 가져오기
+        <button type="button" id="btn-export" class="btn ghost" title="작업 내용을 파일로 내려받습니다">파일로 저장</button>
+        <label class="btn ghost file-btn" title="저장해 둔 파일을 불러옵니다">
+          파일 불러오기
           <input type="file" id="import-file" accept="application/json,.json" hidden />
         </label>
         <button type="button" id="btn-new" class="btn">새 프로젝트</button>
@@ -61,7 +61,7 @@
     </main>
 
     <footer class="foot">
-      <p>데이터는 이 브라우저(로컬)에 저장됩니다. 팀원과 공유하려면 <strong>JSON 내보내기</strong> 후 전달하세요.</p>
+      <p>작성 내용은 이 PC·브라우저에만 자동 저장됩니다. 팀원과 공유하려면 <strong>파일로 저장</strong> → 파일 전달 → 상대가 <strong>파일 불러오기</strong> 하면 됩니다.</p>
     </footer>
   </div>
   <script type="module" src="app.js"></script>

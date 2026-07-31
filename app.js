@@ -232,7 +232,7 @@ function renderSummary() {
             ? absMissing.map(escapeHtml).join(", ")
             : "없음 (좋음)"
         }</p>
-        <p style="margin:0;color:var(--muted);font-size:0.9rem">다음 액션: 절대 기준선(§1)을 모두 «포함»으로 만든 뒤, 케어 4단·원안/대안 표를 채우세요. 팀 공유는 JSON 내보내기.</p>
+        <p style="margin:0;color:var(--muted);font-size:0.9rem">다음 액션: 절대 기준선(§1)을 모두 «포함»으로 만든 뒤, 케어 4단·원안/대안 표를 채우세요. 팀 공유는 «파일로 저장» 후 전달.</p>
       </div>
     </article>`;
 }
@@ -331,9 +331,9 @@ el.importFile.addEventListener("change", async () => {
     state.activeId = activeId;
     persist();
     renderAll();
-    alert("가져오기 완료");
+    alert("파일 불러오기 완료");
   } catch (e) {
-    alert("가져오기 실패: " + e.message);
+    alert("파일 불러오기 실패: " + e.message);
   } finally {
     el.importFile.value = "";
   }
