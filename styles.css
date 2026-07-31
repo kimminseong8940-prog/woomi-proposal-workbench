@@ -49,10 +49,154 @@ body {
   min-height: 100vh;
 }
 
-.app {
-  max-width: 1180px;
-  margin: 0 auto;
-  padding: 28px 20px 64px;
+.shell {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.sidebar {
+  border-right: 1px solid var(--line);
+  background: #fafafa;
+  padding: 18px 14px 28px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: auto;
+}
+
+.side-brand .brand-name { margin-bottom: 4px; }
+.side-brand strong {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: var(--w-bold);
+  margin-bottom: 12px;
+}
+
+.side-toolbar {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.side-btn {
+  width: 100%;
+  text-align: center;
+}
+
+.side-block {
+  margin-bottom: 18px;
+}
+
+.side-block h2 {
+  margin: 0 0 8px;
+  font-size: 0.78rem;
+  font-weight: var(--w-bold);
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+.side-hint {
+  font-weight: var(--w-light);
+  letter-spacing: 0;
+}
+
+.side-status {
+  margin: 0 0 8px;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.side-list {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.side-empty {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  padding: 8px 0;
+}
+
+.side-card {
+  appearance: none;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--line);
+  background: #fff;
+  padding: 10px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.side-card:hover { border-color: var(--accent); }
+.side-card.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.side-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.side-card-title {
+  font-weight: var(--w-bold);
+  font-size: 0.88rem;
+  line-height: 1.3;
+}
+
+.side-badge {
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: var(--w-bold);
+  padding: 2px 6px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.side-badge.status-진행중 { color: var(--accent); border-color: var(--accent); }
+.side-badge.status-참고 { color: var(--warn); border-color: var(--warn); }
+.side-badge.status-완료 { color: var(--ok); border-color: var(--ok); }
+
+.side-card-sub {
+  margin: 6px 0 8px;
+  font-size: 0.75rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.side-progress {
+  height: 4px;
+  background: #e8e8e8;
+  margin-bottom: 6px;
+}
+
+.side-progress i {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.side-card-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-weight: var(--w-medium);
+}
+
+.side-settings { margin-top: 8px; }
+
+.main-col {
+  max-width: 1100px;
+  padding: 24px 22px 64px;
+  width: 100%;
 }
 
 .top {
@@ -60,7 +204,7 @@ body {
   justify-content: space-between;
   gap: 24px;
   align-items: flex-end;
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
 
 .brand-name {
@@ -192,7 +336,7 @@ body {
 
 .project-bar {
   display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr 0.8fr 0.7fr auto;
+  grid-template-columns: 1.1fr 0.7fr 1fr 1fr 0.8fr 0.7fr auto;
   gap: 10px;
   padding: 14px;
   background: var(--panel);
@@ -200,6 +344,58 @@ body {
   box-shadow: var(--shadow);
   margin-bottom: 16px;
   align-items: end;
+}
+
+.settings-dialog {
+  border: 1px solid var(--line);
+  padding: 0;
+  max-width: 28rem;
+  width: calc(100% - 2rem);
+}
+
+.settings-dialog::backdrop { background: rgba(0,0,0,0.35); }
+
+.settings-form {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+}
+
+.settings-form h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: var(--w-bold);
+}
+
+.settings-lead,
+.settings-help {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.settings-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: var(--w-bold);
+  color: var(--muted);
+}
+
+.settings-form input {
+  font: inherit;
+  font-weight: var(--w-medium);
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.settings-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
 }
 
 .project-bar label {
@@ -409,6 +605,16 @@ td.baseline { color: var(--muted); min-width: 12rem; font-size: 0.82rem; font-we
 }
 
 .foot strong { color: var(--ink); font-weight: var(--w-bold); }
+
+@media (max-width: 1100px) {
+  .shell { grid-template-columns: 1fr; }
+  .sidebar {
+    position: relative;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+}
 
 @media (max-width: 960px) {
   .project-bar {

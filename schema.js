@@ -177,6 +177,7 @@ export function createProject(name = "새 프로젝트") {
     name,
     createdAt: now,
     updatedAt: now,
+    workflowStatus: "진행중",
     meta: {
       site: "",
       rivals: "",
@@ -186,4 +187,27 @@ export function createProject(name = "새 프로젝트") {
     checklist: emptyChecklistState(),
     chapters: emptyChapterState(),
   };
+}
+
+/** 0~100 진행률 (체크 응답 + 챕터 기입) */
+export function calcProgress(p) {
+  let done = 0;
+  let total = 0;
+  const checklist = p?.checklist || {};
+  for (const sec of CHECKLIST_SECTIONS) {
+    for (const row of sec.rows) {
+      total += 1;
+      const st = checklist[row.id]?.status;
+      if (st && st !== "미정") done += 1;
+    }
+  }
+  const chapters = p?.chapters || {};
+  for (const block of CHAPTER_BLOCKS) {
+    for (const f of block.fields) {
+      total += 1;
+      if (String(chapters[f.id] || "").trim()) done += 1;
+    }
+  }
+  if (!total) return 0;
+  return Math.round((done / total) * 100);
 }

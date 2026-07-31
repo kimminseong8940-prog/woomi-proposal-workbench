@@ -4,6 +4,7 @@ import {
   STATUS_OPTIONS,
   NATURE_OPTIONS,
   createProject,
+  calcProgress,
 } from "./schema.js";
 import {
   buildDraftBody,
@@ -11,11 +12,19 @@ import {
   exportWord,
   openPrintPdf,
 } from "./draft.js";
+import {
+  loadSettings,
+  saveSettings,
+  fetchTeamManifest,
+  fetchTeamProject,
+  publishProject,
+} from "./teamSync.js";
 
 const STORAGE_KEY = "woomi-proposal-workbench-v1";
 
 const el = {
-  projectSelect: document.getElementById("project-select"),
+  metaName: document.getElementById("meta-name"),
+  metaWorkflow: document.getElementById("meta-workflow"),
   metaSite: document.getElementById("meta-site"),
   metaRivals: document.getElementById("meta-rivals"),
   metaKeyword: document.getElementById("meta-keyword"),
@@ -25,14 +34,29 @@ const el = {
   panelB: document.getElementById("panel-b"),
   panelSummary: document.getElementById("panel-summary"),
   panelDraft: document.getElementById("panel-draft"),
+  sideLocal: document.getElementById("side-local"),
+  sideTeam: document.getElementById("side-team"),
+  sideRef: document.getElementById("side-ref"),
+  teamStatus: document.getElementById("team-sync-status"),
   btnNew: document.getElementById("btn-new"),
   btnExport: document.getElementById("btn-export"),
+  btnPublish: document.getElementById("btn-publish"),
+  btnTeamRefresh: document.getElementById("btn-team-refresh"),
+  btnSettings: document.getElementById("btn-settings"),
   importFile: document.getElementById("import-file"),
+  settingsDialog: document.getElementById("settings-dialog"),
+  settingsForm: document.getElementById("settings-form"),
+  setOwner: document.getElementById("set-owner"),
+  setRepo: document.getElementById("set-repo"),
+  setBranch: document.getElementById("set-branch"),
+  setToken: document.getElementById("set-token"),
 };
 
 let state = loadState();
 let activeId = state.activeId;
 let saveTimer = null;
+let teamManifest = { projects: [] };
+let teamTimer = null;
 
 function loadState() {
   try {
@@ -51,6 +75,7 @@ function persist() {
   if (project) project.updatedAt = new Date().toISOString();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   el.saveHint.textContent = "자동 저장됨 " + new Date().toLocaleTimeString("ko-KR");
+  renderSidebar();
 }
 
 function scheduleSave() {
@@ -65,6 +90,8 @@ function current() {
 
 function ensureProjectShape(p) {
   if (!p.meta) p.meta = { site: "", rivals: "", keyword: "", owner: "" };
+  if (!p.workflowStatus) p.workflowStatus = "진행중";
+  if (!p.name) p.name = "이름 없음";
   if (!p.checklist) p.checklist = {};
   if (!p.chapters) p.chapters = {};
   for (const sec of CHECKLIST_SECTIONS) {
@@ -87,23 +114,177 @@ function ensureProjectShape(p) {
   return p;
 }
 
-function refreshProjectSelect() {
-  el.projectSelect.innerHTML = state.projects
-    .map((p) => {
-      const label = p.meta?.site?.trim()
-        ? `${p.name} · ${p.meta.site}`
-        : p.name;
-      return `<option value="${p.id}" ${p.id === activeId ? "selected" : ""}>${escapeHtml(label)}</option>`;
-    })
-    .join("");
-}
-
 function bindMeta() {
   const p = ensureProjectShape(current());
+  el.metaName.value = p.name || "";
+  el.metaWorkflow.value = p.workflowStatus || "진행중";
   el.metaSite.value = p.meta.site || "";
   el.metaRivals.value = p.meta.rivals || "";
   el.metaKeyword.value = p.meta.keyword || "";
   el.metaOwner.value = p.meta.owner || "";
+}
+
+function formatWhen(iso) {
+  if (!iso) return "";
+  try {
+    return new Date(iso).toLocaleString("ko-KR", {
+      month: "numeric",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch (_) {
+    return "";
+  }
+}
+
+function sideCard({ id, title, sub, progress, status, active, when, badge }) {
+  return `<button type="button" class="side-card ${active ? "active" : ""}" data-open="${escapeAttr(id)}">
+    <div class="side-card-top">
+      <span class="side-card-title">${escapeHtml(title)}</span>
+      <span class="side-badge status-${escapeAttr(status || "진행중")}">${escapeHtml(status || "진행중")}</span>
+    </div>
+    <p class="side-card-sub">${escapeHtml(sub || "사업장 미정")}</p>
+    <div class="side-progress" aria-hidden="true"><i style="width:${progress || 0}%"></i></div>
+    <div class="side-card-meta">
+      <span>${progress || 0}%</span>
+      <span>${escapeHtml(badge || when || "")}</span>
+    </div>
+  </button>`;
+}
+
+function renderSidebar() {
+  const locals = [...state.projects].sort((a, b) =>
+    String(b.updatedAt || "").localeCompare(String(a.updatedAt || ""))
+  );
+  el.sideLocal.innerHTML = locals.length
+    ? locals
+        .map((p) =>
+          sideCard({
+            id: `local:${p.id}`,
+            title: p.name || "이름 없음",
+            sub: [p.meta?.owner, p.meta?.site].filter(Boolean).join(" · ") || "사업장 미정",
+            progress: calcProgress(p),
+            status: p.workflowStatus || "진행중",
+            active: p.id === activeId,
+            when: formatWhen(p.updatedAt),
+          })
+        )
+        .join("")
+    : `<p class="side-empty">아직 없습니다. 「새 프로젝트」를 눌러 주세요.</p>`;
+
+  const team = teamManifest.projects || [];
+  el.sideTeam.innerHTML = team.length
+    ? team
+        .map((t) =>
+          sideCard({
+            id: `team:${t.id}`,
+            title: t.name || "이름 없음",
+            sub: [t.owner, t.site].filter(Boolean).join(" · ") || "사업장 미정",
+            progress: t.progress || 0,
+            status: t.workflowStatus || "진행중",
+            active: false,
+            badge: formatWhen(t.updatedAt),
+          })
+        )
+        .join("")
+    : `<p class="side-empty">팀 공유에 올라온 프로젝트가 없습니다.</p>`;
+
+  el.sideRef.innerHTML = sideCard({
+    id: "ref:sample",
+    title: "샘플 · 성동구 데모",
+    sub: "김민성 · 레퍼런스",
+    progress: 85,
+    status: "참고",
+    active: false,
+    badge: "예시",
+  });
+
+  el.sideLocal.querySelectorAll("[data-open]").forEach((btn) => {
+    btn.addEventListener("click", () => openFromSidebar(btn.dataset.open));
+  });
+  el.sideTeam.querySelectorAll("[data-open]").forEach((btn) => {
+    btn.addEventListener("click", () => openFromSidebar(btn.dataset.open));
+  });
+  el.sideRef.querySelectorAll("[data-open]").forEach((btn) => {
+    btn.addEventListener("click", () => openFromSidebar(btn.dataset.open));
+  });
+}
+
+async function openFromSidebar(key) {
+  if (key.startsWith("local:")) {
+    activeId = key.slice(6);
+    state.activeId = activeId;
+    persist();
+    renderAll();
+    return;
+  }
+  if (key === "ref:sample") {
+    try {
+      const res = await fetch("./samples/sample-seongdong.json");
+      if (!res.ok) throw new Error("샘플 파일을 찾지 못했습니다.");
+      const data = await res.json();
+      upsertProject({ ...data, workflowStatus: data.workflowStatus || "참고" });
+      alert("샘플을 내 프로젝트로 열었습니다. 참고용으로 보세요.");
+    } catch (e) {
+      alert("샘플 열기 실패: " + e.message);
+    }
+    return;
+  }
+  if (key.startsWith("team:")) {
+    const id = key.slice(5);
+    el.teamStatus.textContent = "팀 프로젝트 여는 중…";
+    try {
+      const data = await fetchTeamProject(id);
+      const shaped = ensureProjectShape(data);
+      const existing = state.projects.find((p) => p.id === shaped.id);
+      if (existing && existing.updatedAt && shaped.updatedAt && existing.updatedAt > shaped.updatedAt) {
+        const ok = confirm(
+          "이 PC에 더 최근 수정본이 있습니다.\n팀 버전으로 덮을까요?\n(취소하면 내 버전을 그대로 엽니다)"
+        );
+        if (!ok) {
+          activeId = existing.id;
+          state.activeId = activeId;
+          persist();
+          renderAll();
+          el.teamStatus.textContent = "내 버전으로 열림";
+          return;
+        }
+      }
+      upsertProject(shaped);
+      el.teamStatus.textContent = "팀 프로젝트 열림 · 수정 후 「팀에 올리기」";
+    } catch (e) {
+      el.teamStatus.textContent = "열기 실패";
+      alert("팀 프로젝트 열기 실패: " + e.message);
+    }
+  }
+}
+
+function upsertProject(data) {
+  const shaped = ensureProjectShape(data);
+  const idx = state.projects.findIndex((p) => p.id === shaped.id);
+  if (idx >= 0) state.projects[idx] = shaped;
+  else state.projects.unshift(shaped);
+  activeId = shaped.id;
+  state.activeId = activeId;
+  persist();
+  renderAll();
+}
+
+async function refreshTeamList() {
+  el.teamStatus.textContent = "팀 목록 불러오는 중…";
+  try {
+    teamManifest = await fetchTeamManifest();
+    const n = teamManifest.projects?.length || 0;
+    el.teamStatus.textContent = n
+      ? `팀 공유 ${n}건 · ${formatWhen(teamManifest.updatedAt) || "방금"}`
+      : "팀 공유 비어 있음 · 「팀에 올리기」로 공유";
+    renderSidebar();
+  } catch (e) {
+    el.teamStatus.textContent = "목록 불러오기 실패(배포·설정 확인)";
+    console.warn(e);
+    renderSidebar();
+  }
 }
 
 function renderA() {
@@ -154,9 +335,7 @@ function renderA() {
       const id = node.dataset.cell;
       const field = node.dataset.field;
       p.checklist[id][field] = node.value;
-      if (field === "status") {
-        node.className = `row-select status-${node.value}`;
-      }
+      if (field === "status") node.className = `row-select status-${node.value}`;
       scheduleSave();
       if (document.querySelector('.tab[data-tab="summary"].active')) renderSummary();
     };
@@ -199,11 +378,10 @@ function renderB() {
     }).join("")}`;
 
   el.panelB.querySelectorAll("[data-ch]").forEach((node) => {
-    const handler = () => {
+    node.addEventListener("input", () => {
       p.chapters[node.dataset.ch] = node.value;
       scheduleSave();
-    };
-    node.addEventListener("input", handler);
+    });
   });
 }
 
@@ -215,31 +393,28 @@ function renderSummary() {
     for (const row of sec.rows) {
       const st = p.checklist[row.id].status;
       counts[st] = (counts[st] || 0) + 1;
-      if (sec.id === "abs" && (st === "미포함" || st === "미정")) {
-        absMissing.push(row.item);
-      }
+      if (sec.id === "abs" && (st === "미포함" || st === "미정")) absMissing.push(row.item);
     }
   }
   const site = p.meta.site?.trim() || "사업장 미정";
   const rivals = p.meta.rivals?.trim() || "경쟁사 미정";
+  const prog = calcProgress(p);
 
   el.panelSummary.innerHTML = `
     <div class="summary-grid">
+      <div class="stat"><p class="n">${prog}%</p><p class="l">진행률</p></div>
       <div class="stat"><p class="n">${counts["포함"]}</p><p class="l">포함</p></div>
       <div class="stat"><p class="n" style="color:var(--danger)">${counts["미포함"]}</p><p class="l">미포함</p></div>
       <div class="stat"><p class="n" style="color:var(--muted)">${counts["미정"]}</p><p class="l">미정</p></div>
-      <div class="stat"><p class="n" style="color:var(--warn)">${counts["차별화카드"]}</p><p class="l">차별화 카드</p></div>
     </div>
     <article class="section">
       <div class="section-head"><h2>프로젝트 요약</h2><p></p></div>
       <div class="stack">
         <p style="margin:0"><strong>${escapeHtml(site)}</strong> · ${escapeHtml(rivals)} · 키워드 ${escapeHtml(p.meta.keyword || "—")} · ${escapeHtml(p.meta.owner || "담당 미정")}</p>
-        <p style="margin:0;color:var(--muted);font-size:0.9rem">절대 기준선에서 미정/미포함: ${
-          absMissing.length
-            ? absMissing.map(escapeHtml).join(", ")
-            : "없음 (좋음)"
+        <p style="margin:0;color:var(--muted);font-size:0.9rem">절대 기준선 미정/미포함: ${
+          absMissing.length ? absMissing.map(escapeHtml).join(", ") : "없음 (좋음)"
         }</p>
-        <p style="margin:0;color:var(--muted);font-size:0.9rem">다음: A에서 절대 기준선을 모두 «포함»으로 맞춘 뒤, B의 케어·원안/대안을 채우세요. 팀원에게 넘길 때는 «파일로 저장». 사용법은 「사용방법」 탭.</p>
+        <p style="margin:0;color:var(--muted);font-size:0.9rem">팀원 참고용으로 공유하려면 왼쪽 「지금 프로젝트를 팀에 올리기」.</p>
       </div>
     </article>`;
 }
@@ -255,7 +430,6 @@ function renderDraft() {
       <div class="stack">
         <p style="margin:0;color:var(--muted);font-size:0.9rem">
           표지 → 도입 → 케어 4단 → 원안/대안 → 디자인 9단 → Business → 체크리스트 순으로 장이 나뉩니다.
-          최종 입찰용 디자인 PDF가 아니라, 문구·구조를 정리한 초안입니다.
         </p>
         <div class="draft-actions">
           <button type="button" class="btn" id="btn-draft-word">워드로 받기 (.doc)</button>
@@ -264,41 +438,29 @@ function renderDraft() {
       </div>
     </article>
     <article class="section">
-      <div class="section-head">
-        <h2>미리보기</h2>
-        <p>아래가 내보내질 내용입니다</p>
-      </div>
+      <div class="section-head"><h2>미리보기</h2><p>아래가 내보내질 내용입니다</p></div>
       <div class="draft-preview">
         <style>${draftStyles()}
           .draft-preview .cover { min-height: auto; padding: 8px 0 24px; }
           .draft-preview .page-break {
-            page-break-before: auto;
-            break-before: auto;
-            height: auto;
-            margin: 28px 0;
-            border-top: 1px dashed var(--line);
+            page-break-before: auto; break-before: auto; height: auto;
+            margin: 28px 0; border-top: 1px dashed var(--line);
           }
           .draft-preview .page-break::after {
-            content: "— 여기서 다음 장 —";
-            display: block;
-            text-align: center;
-            color: var(--muted);
-            font-size: 0.75rem;
-            font-weight: 700;
-            padding-top: 8px;
+            content: "— 여기서 다음 장 —"; display: block; text-align: center;
+            color: var(--muted); font-size: 0.75rem; font-weight: 700; padding-top: 8px;
           }
         </style>
         ${buildDraftBody(p)}
       </div>
     </article>`;
-
   el.panelDraft.querySelector("#btn-draft-word")?.addEventListener("click", () => exportWord(p));
   el.panelDraft.querySelector("#btn-draft-pdf")?.addEventListener("click", () => openPrintPdf(p));
 }
 
 function renderAll() {
-  refreshProjectSelect();
   bindMeta();
+  renderSidebar();
   renderA();
   renderB();
   renderSummary();
@@ -317,27 +479,20 @@ function escapeAttr(s) {
   return escapeHtml(s).replaceAll("'", "&#39;");
 }
 
-/* events */
-el.projectSelect.addEventListener("change", () => {
-  activeId = el.projectSelect.value;
-  state.activeId = activeId;
-  persist();
-  renderAll();
-});
-
+/* meta */
 [
-  [el.metaSite, "site"],
-  [el.metaRivals, "rivals"],
-  [el.metaKeyword, "keyword"],
-  [el.metaOwner, "owner"],
-].forEach(([node, key]) => {
-  node.addEventListener("input", () => {
+  [el.metaName, (p, v) => { p.name = v; }],
+  [el.metaWorkflow, (p, v) => { p.workflowStatus = v; }],
+  [el.metaSite, (p, v) => { p.meta.site = v; }],
+  [el.metaRivals, (p, v) => { p.meta.rivals = v; }],
+  [el.metaKeyword, (p, v) => { p.meta.keyword = v; }],
+  [el.metaOwner, (p, v) => { p.meta.owner = v; }],
+].forEach(([node, apply]) => {
+  const ev = node.tagName === "SELECT" ? "change" : "input";
+  node.addEventListener(ev, () => {
     const p = current();
-    p.meta[key] = node.value;
-    if (key === "site" || key === "keyword") {
-      refreshProjectSelect();
-      if (key === "keyword" && document.querySelector('.tab[data-tab="b"].active')) renderB();
-    }
+    apply(p, node.value);
+    if (node === el.metaKeyword && document.querySelector('.tab[data-tab="b"].active')) renderB();
     scheduleSave();
     if (document.querySelector('.tab[data-tab="summary"].active')) renderSummary();
   });
@@ -381,17 +536,9 @@ el.importFile.addEventListener("change", async () => {
   const file = el.importFile.files?.[0];
   if (!file) return;
   try {
-    const text = await file.text();
-    const data = JSON.parse(text);
+    const data = JSON.parse(await file.text());
     if (!data.id || !data.checklist) throw new Error("형식이 올바르지 않습니다.");
-    const existing = state.projects.findIndex((p) => p.id === data.id);
-    const shaped = ensureProjectShape(data);
-    if (existing >= 0) state.projects[existing] = shaped;
-    else state.projects.unshift(shaped);
-    activeId = shaped.id;
-    state.activeId = activeId;
-    persist();
-    renderAll();
+    upsertProject(data);
     alert("파일 불러오기 완료");
   } catch (e) {
     alert("파일 불러오기 실패: " + e.message);
@@ -400,4 +547,52 @@ el.importFile.addEventListener("change", async () => {
   }
 });
 
+el.btnPublish.addEventListener("click", async () => {
+  const p = ensureProjectShape(current());
+  if (!loadSettings().token?.trim()) {
+    alert("먼저 「팀 공유 설정」에서 GitHub 토큰을 저장해 주세요.");
+    el.settingsDialog.showModal();
+    return;
+  }
+  el.btnPublish.disabled = true;
+  el.teamStatus.textContent = "팀에 올리는 중…";
+  try {
+    teamManifest = await publishProject(p, calcProgress);
+    el.teamStatus.textContent = "팀에 올림 · 다른 사람도 왼쪽에서 볼 수 있습니다";
+    renderSidebar();
+    alert("팀에 올렸습니다. 잠시 후 다른 사람 화면의 「팀 새로고침」을 누르면 보입니다.");
+  } catch (e) {
+    el.teamStatus.textContent = "올리기 실패";
+    alert("팀에 올리기 실패: " + e.message);
+  } finally {
+    el.btnPublish.disabled = false;
+  }
+});
+
+el.btnTeamRefresh.addEventListener("click", () => refreshTeamList());
+
+el.btnSettings.addEventListener("click", () => {
+  const s = loadSettings();
+  el.setOwner.value = s.owner;
+  el.setRepo.value = s.repo;
+  el.setBranch.value = s.branch;
+  el.setToken.value = s.token;
+  el.settingsDialog.showModal();
+});
+
+el.settingsForm.addEventListener("submit", (ev) => {
+  const val = ev.submitter?.value;
+  if (val === "save") {
+    saveSettings({
+      owner: el.setOwner.value.trim() || "kimminseong8940-prog",
+      repo: el.setRepo.value.trim() || "woomi-proposal-workbench",
+      branch: el.setBranch.value.trim() || "main",
+      token: el.setToken.value.trim(),
+    });
+    refreshTeamList();
+  }
+});
+
 renderAll();
+refreshTeamList();
+teamTimer = setInterval(refreshTeamList, 60000);

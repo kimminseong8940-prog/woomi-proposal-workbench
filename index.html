@@ -7,105 +7,170 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="app">
-    <header class="top">
-      <div class="brand">
+  <div class="shell">
+    <aside class="sidebar" aria-label="프로젝트 목록">
+      <div class="side-brand">
         <p class="brand-name">우미건설 · 도시정비</p>
-        <h1>제안서 제작 워크벤치</h1>
-        <p class="brand-sub">사업장·경쟁사가 아직 없어도 바로 쓸 수 있습니다.</p>
+        <strong>진행 중 프로젝트</strong>
       </div>
-      <div class="top-actions">
-        <button type="button" id="btn-export" class="btn ghost" title="지금 작업한 내용을 PC에 파일로 받습니다">파일로 저장</button>
-        <label class="btn ghost file-btn" title="예전에 저장한 파일을 다시 엽니다">
-          파일 불러오기
-          <input type="file" id="import-file" accept="application/json,.json" hidden />
-        </label>
-        <button type="button" id="btn-new" class="btn ghost">새 프로젝트</button>
+
+      <div class="side-toolbar">
+        <button type="button" class="btn side-btn" id="btn-new">새 프로젝트</button>
+        <button type="button" class="btn ghost side-btn" id="btn-team-refresh" title="팀 목록 새로고침">팀 새로고침</button>
       </div>
-    </header>
 
-    <section class="project-bar">
-      <label>
-        프로젝트
-        <select id="project-select"></select>
-      </label>
-      <label>
-        사업장명
-        <input id="meta-site" type="text" placeholder="미정 / 추후 기입" />
-      </label>
-      <label>
-        예상 경쟁사
-        <input id="meta-rivals" type="text" placeholder="미정 / 예: 현대·GS" />
-      </label>
-      <label>
-        핵심 키워드 (1단어)
-        <input id="meta-keyword" type="text" placeholder="예: TRUST" />
-      </label>
-      <label>
-        담당
-        <input id="meta-owner" type="text" placeholder="이름" />
-      </label>
-      <p class="save-hint" id="save-hint">자동 저장됨</p>
-    </section>
-
-    <nav class="tabs" role="tablist">
-      <button type="button" class="tab" data-tab="guide">사용방법</button>
-      <button type="button" class="tab active" data-tab="a">A. 기준선 체크리스트</button>
-      <button type="button" class="tab" data-tab="b">B. 챕터 골격</button>
-      <button type="button" class="tab" data-tab="summary">요약</button>
-      <button type="button" class="tab" data-tab="draft">초안 내보내기</button>
-    </nav>
-
-    <main>
-      <section id="panel-guide" class="panel">
-        <article class="section how-to" aria-label="사용 방법">
-          <div class="section-head">
-            <h2>사용 방법 (이렇게만 하시면 됩니다)</h2>
-            <p>처음이시면 이 탭만 읽으시면 됩니다</p>
-          </div>
-          <div class="stack">
-            <ol class="how-to-steps">
-              <li>
-                <strong>A. 기준선 체크리스트</strong>
-                <span>경쟁사가 기본적으로 넣는 항목을 하나씩 확인합니다. 「포함 / 미포함 / 미정」만 고르고, 우리 문구를 적으면 됩니다.</span>
-              </li>
-              <li>
-                <strong>B. 챕터 골격</strong>
-                <span>제안서 본문에 넣을 내용을 칸에 맞춰 채웁니다. (케어, 원안·대안, 디자인, Business 등)</span>
-              </li>
-              <li>
-                <strong>요약</strong>
-                <span>지금까지 몇 개 채웠는지, 빠진 항목이 어디인지 한눈에 봅니다.</span>
-              </li>
-              <li>
-                <strong>초안 내보내기</strong>
-                <span>적어 둔 내용으로 제안서 초안을 만듭니다. 워드 파일로 받거나, 인쇄 창에서 PDF로 저장할 수 있습니다. (장 나눔 포함 · 최종 디자인 제안서는 아닙니다)</span>
-              </li>
-            </ol>
-            <p class="how-to-share">
-              <strong>팀원과 같이 쓰려면:</strong>
-              위쪽 <em>파일로 저장</em>을 누르면 작업 파일이 PC에 받아집니다.
-              그 파일을 메신저·공유폴더로 보내고, 받는 사람은 <em>파일 불러오기</em>로 열면 됩니다.
-              (파일 이름은 신경 쓰지 않으셔도 됩니다. 엑셀 파일 주고받는 것과 같습니다.)
-            </p>
-            <p class="how-to-note">
-              <strong>자동 저장됩니다.</strong>
-              중간에 끄셔도, 나중에 같은 PC·같은 브라우저로 다시 들어오면 그대로 이어집니다.
-              「파일로 저장」은 팀원에게 넘길 때, 또는 다른 PC에서 이어서 할 때만 쓰시면 됩니다.
-            </p>
-          </div>
-        </article>
+      <section class="side-block">
+        <h2>내 프로젝트</h2>
+        <div id="side-local" class="side-list"></div>
       </section>
-      <section id="panel-a" class="panel active"></section>
-      <section id="panel-b" class="panel"></section>
-      <section id="panel-summary" class="panel"></section>
-      <section id="panel-draft" class="panel"></section>
-    </main>
 
-    <footer class="foot">
-      <p>막히면 「사용방법」 탭을 다시 보시면 됩니다.</p>
-    </footer>
+      <section class="side-block">
+        <h2>팀 공유 <span class="side-hint">(서로 보고 이어서 수정)</span></h2>
+        <p id="team-sync-status" class="side-status">목록 불러오는 중…</p>
+        <div id="side-team" class="side-list"></div>
+        <button type="button" class="btn ghost side-btn" id="btn-publish">지금 프로젝트를 팀에 올리기</button>
+      </section>
+
+      <section class="side-block">
+        <h2>레퍼런스 샘플</h2>
+        <div id="side-ref" class="side-list"></div>
+      </section>
+
+      <button type="button" class="btn ghost side-btn side-settings" id="btn-settings">팀 공유 설정</button>
+    </aside>
+
+    <div class="main-col">
+      <header class="top">
+        <div class="brand">
+          <h1>제안서 제작 워크벤치</h1>
+          <p class="brand-sub">왼쪽에서 진행 중인 프로젝트를 고르세요. 팀 공유에 올리면 다른 사람도 보고 이어서 수정할 수 있습니다.</p>
+        </div>
+        <div class="top-actions">
+          <button type="button" id="btn-export" class="btn ghost" title="지금 작업한 내용을 PC에 파일로 받습니다">파일로 저장</button>
+          <label class="btn ghost file-btn" title="예전에 저장한 파일을 다시 엽니다">
+            파일 불러오기
+            <input type="file" id="import-file" accept="application/json,.json" hidden />
+          </label>
+        </div>
+      </header>
+
+      <section class="project-bar">
+        <label>
+          프로젝트 이름
+          <input id="meta-name" type="text" placeholder="예: ○○구역 제안" />
+        </label>
+        <label>
+          상태
+          <select id="meta-workflow">
+            <option value="진행중">진행중</option>
+            <option value="참고">참고</option>
+            <option value="완료">완료</option>
+          </select>
+        </label>
+        <label>
+          사업장명
+          <input id="meta-site" type="text" placeholder="미정 / 추후 기입" />
+        </label>
+        <label>
+          예상 경쟁사
+          <input id="meta-rivals" type="text" placeholder="미정 / 예: 현대·GS" />
+        </label>
+        <label>
+          핵심 키워드 (1단어)
+          <input id="meta-keyword" type="text" placeholder="예: TRUST" />
+        </label>
+        <label>
+          담당
+          <input id="meta-owner" type="text" placeholder="이름" />
+        </label>
+        <p class="save-hint" id="save-hint">자동 저장됨</p>
+      </section>
+
+      <nav class="tabs" role="tablist">
+        <button type="button" class="tab" data-tab="guide">사용방법</button>
+        <button type="button" class="tab active" data-tab="a">A. 기준선 체크리스트</button>
+        <button type="button" class="tab" data-tab="b">B. 챕터 골격</button>
+        <button type="button" class="tab" data-tab="summary">요약</button>
+        <button type="button" class="tab" data-tab="draft">초안 내보내기</button>
+      </nav>
+
+      <main>
+        <section id="panel-guide" class="panel">
+          <article class="section how-to" aria-label="사용 방법">
+            <div class="section-head">
+              <h2>사용 방법 (이렇게만 하시면 됩니다)</h2>
+              <p>처음이시면 이 탭만 읽으시면 됩니다</p>
+            </div>
+            <div class="stack">
+              <ol class="how-to-steps">
+                <li>
+                  <strong>왼쪽 목록</strong>
+                  <span>진행 중인 프로젝트·팀 공유·샘플이 보입니다. 클릭하면 그 내용이 열립니다. 다른 사람 작업은 「팀 공유」에서 보고, 필요하면 이어서 수정한 뒤 다시 「팀에 올리기」하면 됩니다.</span>
+                </li>
+                <li>
+                  <strong>A. 기준선 체크리스트</strong>
+                  <span>경쟁사가 기본적으로 넣는 항목을 「포함 / 미포함 / 미정」으로 고르고, 우리 문구를 적습니다.</span>
+                </li>
+                <li>
+                  <strong>B. 챕터 골격</strong>
+                  <span>제안서 본문에 넣을 내용을 칸에 맞춰 채웁니다.</span>
+                </li>
+                <li>
+                  <strong>요약 · 초안 내보내기</strong>
+                  <span>빠진 칸을 확인하고, 워드/PDF 초안을 받습니다.</span>
+                </li>
+              </ol>
+              <p class="how-to-share">
+                <strong>팀과 같이 쓰려면:</strong>
+                아래쪽 「팀 공유 설정」에서 GitHub 토큰을 한 번 넣어 주세요(팀장 PC).
+                그다음 누구나 「지금 프로젝트를 팀에 올리기」→ 다른 사람은 왼쪽 「팀 공유」에서 열어 수정 → 다시 올리면 됩니다.
+                <em>동시에 같은 칸을 두 사람이 고치면, 나중에 올린 쪽이 남습니다.</em>
+              </p>
+              <p class="how-to-note">
+                <strong>이 PC에는 자동 저장</strong>됩니다. 팀 목록에 보이게 하려면 「팀에 올리기」를 한 번 눌러 주세요.
+              </p>
+            </div>
+          </article>
+        </section>
+        <section id="panel-a" class="panel active"></section>
+        <section id="panel-b" class="panel"></section>
+        <section id="panel-summary" class="panel"></section>
+        <section id="panel-draft" class="panel"></section>
+      </main>
+
+      <footer class="foot">
+        <p>막히면 「사용방법」 탭을 다시 보시면 됩니다.</p>
+      </footer>
+    </div>
   </div>
+
+  <dialog id="settings-dialog" class="settings-dialog">
+    <form method="dialog" id="settings-form" class="settings-form">
+      <h2>팀 공유 설정</h2>
+      <p class="settings-lead">팀장이 한 번만 설정하면 됩니다. 토큰이 있는 PC에서 「팀에 올리기」가 됩니다. 목록 보기는 토큰 없이도 됩니다.</p>
+      <label>GitHub 사용자(또는 조직)
+        <input id="set-owner" type="text" autocomplete="off" />
+      </label>
+      <label>저장소 이름
+        <input id="set-repo" type="text" autocomplete="off" />
+      </label>
+      <label>브랜치
+        <input id="set-branch" type="text" autocomplete="off" />
+      </label>
+      <label>Personal Access Token (내용 쓰기 권한)
+        <input id="set-token" type="password" autocomplete="off" placeholder="github_pat_… 또는 ghp_…" />
+      </label>
+      <p class="settings-help">
+        GitHub → Settings → Developer settings → Personal access tokens 에서 만듭니다.
+        권한: 이 저장소 Contents Read and write. 토큰은 이 브라우저에만 저장됩니다.
+      </p>
+      <div class="settings-actions">
+        <button type="submit" class="btn" value="save">저장</button>
+        <button type="submit" class="btn ghost" value="cancel">닫기</button>
+      </div>
+    </form>
+  </dialog>
+
   <script type="module" src="app.js"></script>
 </body>
 </html>
