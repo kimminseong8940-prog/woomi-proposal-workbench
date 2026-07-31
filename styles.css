@@ -68,11 +68,6 @@ body {
   z-index: 2;
 }
 
-.main-col {
-  min-width: 0;
-  overflow-x: auto;
-}
-
 .side-brand .brand-name { margin-bottom: 4px; }
 .side-brand strong {
   display: block;
@@ -202,10 +197,12 @@ body {
 .side-settings { margin-top: 8px; }
 
 .main-col {
+  min-width: 0;
   max-width: 1100px;
   padding: 24px 22px 64px;
   width: 100%;
   box-sizing: border-box;
+  overflow-x: auto;
 }
 
 .top {
