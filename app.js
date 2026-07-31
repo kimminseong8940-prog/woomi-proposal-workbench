@@ -41,6 +41,7 @@ const el = {
   teamStatus: document.getElementById("team-sync-status"),
   btnNew: document.getElementById("btn-new"),
   btnExport: document.getElementById("btn-export"),
+  btnDeleteProject: document.getElementById("btn-delete-project"),
   btnPublish: document.getElementById("btn-publish"),
   btnTeamRefresh: document.getElementById("btn-team-refresh"),
   btnSettings: document.getElementById("btn-settings"),
@@ -612,6 +613,10 @@ el.btnNew.addEventListener("click", () => {
   state.activeId = activeId;
   persist();
   renderAll();
+});
+
+el.btnDeleteProject?.addEventListener("click", () => {
+  deleteLocalProject(activeId);
 });
 
 el.btnExport.addEventListener("click", () => {
