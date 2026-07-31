@@ -5,6 +5,12 @@ import {
   NATURE_OPTIONS,
   createProject,
 } from "./schema.js";
+import {
+  buildDraftBody,
+  draftStyles,
+  exportWord,
+  openPrintPdf,
+} from "./draft.js";
 
 const STORAGE_KEY = "woomi-proposal-workbench-v1";
 
@@ -18,6 +24,7 @@ const el = {
   panelA: document.getElementById("panel-a"),
   panelB: document.getElementById("panel-b"),
   panelSummary: document.getElementById("panel-summary"),
+  panelDraft: document.getElementById("panel-draft"),
   btnNew: document.getElementById("btn-new"),
   btnExport: document.getElementById("btn-export"),
   importFile: document.getElementById("import-file"),
@@ -237,12 +244,65 @@ function renderSummary() {
     </article>`;
 }
 
+function renderDraft() {
+  const p = ensureProjectShape(current());
+  el.panelDraft.innerHTML = `
+    <article class="section">
+      <div class="section-head">
+        <h2>제안서 초안 내보내기</h2>
+        <p>A·B에 적은 내용으로 초안을 만듭니다</p>
+      </div>
+      <div class="stack">
+        <p style="margin:0;color:var(--muted);font-size:0.9rem">
+          표지 → 도입 → 케어 4단 → 원안/대안 → 디자인 9단 → Business → 체크리스트 순으로 장이 나뉩니다.
+          최종 입찰용 디자인 PDF가 아니라, 문구·구조를 정리한 초안입니다.
+        </p>
+        <div class="draft-actions">
+          <button type="button" class="btn" id="btn-draft-word">워드로 받기 (.doc)</button>
+          <button type="button" class="btn ghost" id="btn-draft-pdf">PDF로 저장 (인쇄)</button>
+        </div>
+      </div>
+    </article>
+    <article class="section">
+      <div class="section-head">
+        <h2>미리보기</h2>
+        <p>아래가 내보내질 내용입니다</p>
+      </div>
+      <div class="draft-preview">
+        <style>${draftStyles()}
+          .draft-preview .cover { min-height: auto; padding: 8px 0 24px; }
+          .draft-preview .page-break {
+            page-break-before: auto;
+            break-before: auto;
+            height: auto;
+            margin: 28px 0;
+            border-top: 1px dashed var(--line);
+          }
+          .draft-preview .page-break::after {
+            content: "— 여기서 다음 장 —";
+            display: block;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding-top: 8px;
+          }
+        </style>
+        ${buildDraftBody(p)}
+      </div>
+    </article>`;
+
+  el.panelDraft.querySelector("#btn-draft-word")?.addEventListener("click", () => exportWord(p));
+  el.panelDraft.querySelector("#btn-draft-pdf")?.addEventListener("click", () => openPrintPdf(p));
+}
+
 function renderAll() {
   refreshProjectSelect();
   bindMeta();
   renderA();
   renderB();
   renderSummary();
+  if (document.querySelector('.tab[data-tab="draft"].active')) renderDraft();
 }
 
 function escapeHtml(s) {
@@ -291,6 +351,7 @@ document.querySelectorAll(".tab").forEach((tab) => {
     document.getElementById(`panel-${tab.dataset.tab}`).classList.add("active");
     if (tab.dataset.tab === "summary") renderSummary();
     if (tab.dataset.tab === "b") renderB();
+    if (tab.dataset.tab === "draft") renderDraft();
   });
 });
 

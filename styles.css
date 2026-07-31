@@ -390,6 +390,17 @@ td.baseline { color: var(--muted); min-width: 12rem; font-size: 0.82rem; font-we
   font-weight: var(--w-bold);
 }
 
+.draft-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.draft-preview {
+  padding: 16px 18px 28px;
+  background: #fff;
+}
+
 .foot {
   margin-top: 20px;
   color: var(--muted);
