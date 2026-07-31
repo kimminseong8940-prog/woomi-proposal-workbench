@@ -64,7 +64,12 @@ function loadState() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (parsed?.projects?.length) return parsed;
+      if (parsed?.projects?.length) {
+        if (!parsed.projects.some((p) => p.id === parsed.activeId)) {
+          parsed.activeId = parsed.projects[0].id;
+        }
+        return parsed;
+      }
     }
   } catch (_) { /* ignore */ }
   const p = createProject("기본 프로젝트 (사업장 미정)");
@@ -86,10 +91,21 @@ function scheduleSave() {
 }
 
 function current() {
-  return state.projects.find((p) => p.id === activeId);
+  let p = state.projects.find((x) => x.id === activeId);
+  if (!p) {
+    if (!state.projects.length) {
+      const created = createProject("기본 프로젝트 (사업장 미정)");
+      state.projects = [created];
+    }
+    p = state.projects[0];
+    activeId = p.id;
+    state.activeId = activeId;
+  }
+  return p;
 }
 
 function ensureProjectShape(p) {
+  if (!p || typeof p !== "object") p = createProject("복구된 프로젝트");
   if (!p.meta) p.meta = { site: "", rivals: "", keyword: "", owner: "" };
   if (!p.workflowStatus) p.workflowStatus = "진행중";
   if (!p.name) p.name = "이름 없음";
@@ -462,12 +478,27 @@ function renderDraft() {
 }
 
 function renderAll() {
-  bindMeta();
-  renderSidebar();
-  renderA();
-  renderB();
-  renderSummary();
-  if (document.querySelector('.tab[data-tab="draft"].active')) renderDraft();
+  try {
+    ensureProjectShape(current());
+    bindMeta();
+    renderSidebar();
+    renderA();
+    renderB();
+    renderSummary();
+    if (document.querySelector('.tab[data-tab="draft"].active')) renderDraft();
+  } catch (err) {
+    console.error(err);
+    el.saveHint.textContent = "화면 복구 중…";
+    const p = createProject("기본 프로젝트 (사업장 미정)");
+    state = { activeId: p.id, projects: [p] };
+    activeId = p.id;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    bindMeta();
+    renderSidebar();
+    renderA();
+    renderB();
+    renderSummary();
+  }
 }
 
 function escapeHtml(s) {
