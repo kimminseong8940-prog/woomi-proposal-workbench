@@ -155,19 +155,25 @@ function formatWhen(iso) {
   }
 }
 
-function sideCard({ id, title, sub, progress, status, active, when, badge }) {
-  return `<button type="button" class="side-card ${active ? "active" : ""}" data-open="${escapeAttr(id)}">
-    <div class="side-card-top">
-      <span class="side-card-title">${escapeHtml(title)}</span>
-      <span class="side-badge status-${escapeAttr(status || "진행중")}">${escapeHtml(status || "진행중")}</span>
-    </div>
-    <p class="side-card-sub">${escapeHtml(sub || "사업장 미정")}</p>
-    <div class="side-progress" aria-hidden="true"><i style="width:${progress || 0}%"></i></div>
-    <div class="side-card-meta">
-      <span>${progress || 0}%</span>
-      <span>${escapeHtml(badge || when || "")}</span>
-    </div>
-  </button>`;
+function sideCard({ id, title, sub, progress, status, active, when, badge, canDelete }) {
+  const del = canDelete
+    ? `<button type="button" class="side-del" data-del="${escapeAttr(id)}" title="이 프로젝트 삭제">삭제</button>`
+    : "";
+  return `<div class="side-card-wrap ${active ? "active" : ""}">
+    <button type="button" class="side-card" data-open="${escapeAttr(id)}">
+      <div class="side-card-top">
+        <span class="side-card-title">${escapeHtml(title)}</span>
+        <span class="side-badge status-${escapeAttr(status || "진행중")}">${escapeHtml(status || "진행중")}</span>
+      </div>
+      <p class="side-card-sub">${escapeHtml(sub || "사업장 미정")}</p>
+      <div class="side-progress" aria-hidden="true"><i style="width:${progress || 0}%"></i></div>
+      <div class="side-card-meta">
+        <span>${progress || 0}%</span>
+        <span>${escapeHtml(badge || when || "")}</span>
+      </div>
+    </button>
+    ${del}
+  </div>`;
 }
 
 function renderSidebar() {
@@ -185,6 +191,7 @@ function renderSidebar() {
             status: p.workflowStatus || "진행중",
             active: p.id === activeId,
             when: formatWhen(p.updatedAt),
+            canDelete: true,
           })
         )
         .join("")
@@ -221,12 +228,39 @@ function renderSidebar() {
   el.sideLocal.querySelectorAll("[data-open]").forEach((btn) => {
     btn.addEventListener("click", () => openFromSidebar(btn.dataset.open));
   });
+  el.sideLocal.querySelectorAll("[data-del]").forEach((btn) => {
+    btn.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      deleteLocalProject(btn.dataset.del.replace(/^local:/, ""));
+    });
+  });
   el.sideTeam.querySelectorAll("[data-open]").forEach((btn) => {
     btn.addEventListener("click", () => openFromSidebar(btn.dataset.open));
   });
   el.sideRef.querySelectorAll("[data-open]").forEach((btn) => {
     btn.addEventListener("click", () => openFromSidebar(btn.dataset.open));
   });
+}
+
+function deleteLocalProject(id) {
+  const p = state.projects.find((x) => x.id === id);
+  if (!p) return;
+  const label = p.name || p.meta?.site || id;
+  if (!confirm(`「${label}」프로젝트를 삭제할까요?\n이 PC에서만 지워집니다. (팀 공유에 올린 건 그대로 남을 수 있습니다)`)) {
+    return;
+  }
+  state.projects = state.projects.filter((x) => x.id !== id);
+  if (!state.projects.length) {
+    const created = createProject("기본 프로젝트 (사업장 미정)");
+    state.projects = [created];
+    activeId = created.id;
+  } else if (activeId === id) {
+    activeId = state.projects[0].id;
+  }
+  state.activeId = activeId;
+  persist();
+  renderAll();
 }
 
 async function openFromSidebar(key) {

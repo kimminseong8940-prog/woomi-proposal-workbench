@@ -123,22 +123,49 @@ body {
   padding: 8px 0;
 }
 
+.side-card-wrap {
+  border: 1px solid var(--line);
+  background: #fff;
+  position: relative;
+}
+
+.side-card-wrap.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.side-card-wrap:hover { border-color: var(--accent); }
+
 .side-card {
   appearance: none;
   width: 100%;
   text-align: left;
-  border: 1px solid var(--line);
-  background: #fff;
+  border: none;
+  background: transparent;
   padding: 10px;
   cursor: pointer;
   font: inherit;
   color: inherit;
 }
 
-.side-card:hover { border-color: var(--accent); }
-.side-card.active {
-  border-color: var(--accent);
-  background: var(--accent-soft);
+.side-del {
+  appearance: none;
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--danger);
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: var(--w-bold);
+  padding: 2px 6px;
+  cursor: pointer;
+}
+
+.side-del:hover {
+  border-color: var(--danger);
+  background: #fff5f5;
 }
 
 .side-card-top {
