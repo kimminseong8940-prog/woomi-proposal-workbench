@@ -47,6 +47,7 @@ body {
   color: var(--ink);
   background: var(--bg);
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 .shell {
@@ -55,6 +56,9 @@ body {
   column-gap: 28px;
   min-height: 100vh;
   align-items: start;
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
 }
 
 .shell.sidebar-collapsed {
@@ -318,16 +322,15 @@ body {
 
 .main-col {
   min-width: 0;
-  max-width: 1140px;
-  padding: 28px 28px 64px 8px;
+  max-width: 100%;
+  padding: 28px 24px 64px 8px;
   width: 100%;
   box-sizing: border-box;
-  overflow-x: auto;
+  overflow-x: hidden;
 }
 
 .shell.sidebar-collapsed .main-col {
   padding-left: 28px;
-  max-width: 1280px;
 }
 
 .top {
@@ -639,23 +642,30 @@ body {
   font-weight: var(--w-light);
 }
 
-.table-wrap { overflow-x: auto; }
+.table-wrap {
+  overflow: hidden;
+  width: 100%;
+}
 
 table {
   width: 100%;
+  max-width: 100%;
   border-collapse: collapse;
-  font-size: 0.86rem;
+  font-size: 0.82rem;
+  table-layout: fixed;
 }
 
 th, td {
   border-bottom: 1px solid var(--line);
-  padding: 0.55rem 0.65rem;
+  padding: 0.45rem 0.4rem;
   text-align: left;
   vertical-align: top;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 
 th {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--muted);
@@ -663,8 +673,30 @@ th {
   background: #fafafa;
 }
 
-td.item { font-weight: var(--w-medium); min-width: 9rem; }
-td.baseline { color: var(--muted); min-width: 12rem; font-size: 0.82rem; font-weight: var(--w-light); }
+/* 항목 | 업계기준선 | 우미초안 | 성격 | 상태 | 메모 */
+table th:nth-child(1),
+table td:nth-child(1) { width: 16%; }
+table th:nth-child(2),
+table td:nth-child(2) { width: 22%; }
+table th:nth-child(3),
+table td:nth-child(3) { width: 26%; }
+table th:nth-child(4),
+table td:nth-child(4) { width: 10%; }
+table th:nth-child(5),
+table td:nth-child(5) { width: 12%; }
+table th:nth-child(6),
+table td:nth-child(6) { width: 14%; }
+
+td.item { font-weight: var(--w-medium); }
+td.baseline { color: var(--muted); font-size: 0.78rem; font-weight: var(--w-light); }
+
+.table-wrap .row-input,
+.table-wrap .row-select {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
 
 .status-미정 { color: var(--muted); }
 .status-포함 { color: var(--ok); font-weight: var(--w-bold); }
