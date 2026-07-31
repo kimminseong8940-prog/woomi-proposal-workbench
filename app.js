@@ -19,6 +19,7 @@ import {
   fetchTeamProject,
   publishProject,
 } from "./teamSync.js";
+import { cloneSample } from "./sampleData.js";
 
 const STORAGE_KEY = "woomi-proposal-workbench-v1";
 
@@ -190,13 +191,14 @@ function renderSidebar() {
         .join("")
     : `<p class="side-empty">팀 공유에 올라온 프로젝트가 없습니다.</p>`;
 
+  const sample = cloneSample();
   el.sideRef.innerHTML = sideCard({
     id: "ref:sample",
-    title: "샘플 · 성동구 데모",
-    sub: "김민성 · 레퍼런스",
-    progress: 85,
+    title: sample.name,
+    sub: `${sample.meta.owner} · 경쟁사수치 혼합`,
+    progress: calcProgress(sample),
     status: "참고",
-    active: false,
+    active: activeId === sample.id,
     badge: "예시",
   });
 
@@ -220,15 +222,16 @@ async function openFromSidebar(key) {
     return;
   }
   if (key === "ref:sample") {
-    try {
-      const res = await fetch("./samples/sample-seongdong.json");
-      if (!res.ok) throw new Error("샘플 파일을 찾지 못했습니다.");
-      const data = await res.json();
-      upsertProject({ ...data, workflowStatus: data.workflowStatus || "참고" });
-      alert("샘플을 내 프로젝트로 열었습니다. 참고용으로 보세요.");
-    } catch (e) {
-      alert("샘플 열기 실패: " + e.message);
-    }
+    const data = cloneSample();
+    data.updatedAt = new Date().toISOString();
+    upsertProject(data);
+    // 채워진 내용이 바로 보이게 초안 탭으로
+    document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
+    document.querySelector('.tab[data-tab="draft"]')?.classList.add("active");
+    document.getElementById("panel-draft")?.classList.add("active");
+    renderDraft();
+    alert("샘플을 열었습니다. 숫자·멘트는 경쟁사 관측치를 섞은 가상 예시입니다. A/B 탭에서도 확인하세요.");
     return;
   }
   if (key.startsWith("team:")) {

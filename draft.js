@@ -19,7 +19,9 @@ function filled(s) {
 }
 
 function pageBreak() {
-  return `<div class="page-break"></div>`;
+  // Word(.doc) + 브라우저 인쇄 모두에서 장 나눔
+  return `<br clear="all" style="page-break-before:always;break-before:page" />
+<div class="page-break"></div>`;
 }
 
 function block(title, bodyHtml) {
@@ -86,7 +88,7 @@ export function buildDraftBody(p) {
     .fields.map((f) => kv(f.label, ch[f.id]))
     .join("");
 
-  let checklistHtml = "";
+  const checklistChunks = [];
   for (const sec of CHECKLIST_SECTIONS) {
     const rows = sec.rows
       .map((row) => {
@@ -103,12 +105,17 @@ export function buildDraftBody(p) {
       .filter(Boolean)
       .join("");
     if (!rows) continue;
-    checklistHtml += `<h3>${esc(sec.title)}</h3>
+    checklistChunks.push(`<h3>${esc(sec.title)}</h3>
       <table class="doc-table">
         <thead><tr><th>항목</th><th>상태</th><th>성격</th><th>우미 초안</th><th>메모</th></tr></thead>
         <tbody>${rows}</tbody>
-      </table>`;
+      </table>`);
   }
+
+  // 체크리스트가 길면 2장으로 자동 분할 (1~3절 / 4~7절)
+  const mid = Math.ceil(checklistChunks.length / 2) || 0;
+  const checkA = checklistChunks.slice(0, mid).join("") || `<p class="empty">아직 적힌 내용이 없습니다.</p>`;
+  const checkB = checklistChunks.slice(mid).join("");
 
   return [
     cover,
@@ -123,13 +130,23 @@ export function buildDraftBody(p) {
     pageBreak(),
     block("5. Business Proposal", bizParts || `<p class="empty">아직 적힌 내용이 없습니다.</p>`),
     pageBreak(),
-    block("6. 기준선 체크리스트", checklistHtml || `<p class="empty">아직 적힌 내용이 없습니다.</p>`),
+    block("6. 기준선 체크리스트 (1)", checkA),
+    checkB ? pageBreak() + block("6. 기준선 체크리스트 (2)", checkB) : "",
   ].join("\n");
 }
 
 export function draftStyles() {
   return `
-    @page { size: A4; margin: 18mm 16mm; }
+    @page {
+      size: A4;
+      margin: 18mm 16mm 22mm 16mm;
+      @bottom-center {
+        content: "— " counter(page) " —";
+        font-family: "Malgun Gothic", sans-serif;
+        font-size: 9pt;
+        color: #5c6560;
+      }
+    }
     * { box-sizing: border-box; }
     body {
       margin: 0;
@@ -139,6 +156,7 @@ export function draftStyles() {
       font-size: 11pt;
       line-height: 1.55;
       background: #fff;
+      counter-reset: page;
     }
     .cover { min-height: 70vh; display: flex; flex-direction: column; justify-content: center; }
     .eyebrow { letter-spacing: 0.12em; text-transform: uppercase; color: #0d5c4d; font-weight: 700; font-size: 10pt; margin: 0 0 12px; }
@@ -149,8 +167,8 @@ export function draftStyles() {
     .cover-meta dt { margin: 0; color: #5c6560; font-weight: 700; font-size: 9pt; }
     .cover-meta dd { margin: 0; font-weight: 400; }
     .cover-note { margin-top: 40px; color: #5c6560; font-size: 9pt; max-width: 36rem; }
-    .page-break { page-break-before: always; break-before: page; height: 0; }
-    .doc-sec { margin: 0 0 8px; }
+    .page-break { page-break-before: always; break-before: page; height: 0; display: block; }
+    .doc-sec { margin: 0 0 8px; page-break-inside: avoid; }
     .doc-sec h2 {
       margin: 0 0 16px;
       font-size: 16pt;
@@ -159,8 +177,8 @@ export function draftStyles() {
       padding-bottom: 8px;
       color: #0d5c4d;
     }
-    .doc-sec h3 { margin: 18px 0 8px; font-size: 12pt; font-weight: 700; }
-    .kv { margin: 0 0 12px; }
+    .doc-sec h3 { margin: 18px 0 8px; font-size: 12pt; font-weight: 700; page-break-after: avoid; }
+    .kv { margin: 0 0 12px; page-break-inside: avoid; }
     .kv .k { display: block; font-size: 9pt; font-weight: 700; color: #5c6560; margin-bottom: 3px; }
     .kv .v { font-weight: 400; white-space: pre-wrap; }
     .empty { color: #8a9390; font-style: italic; }
@@ -172,6 +190,7 @@ export function draftStyles() {
       text-align: left;
     }
     .doc-table th { background: #f3f6f5; font-weight: 700; color: #5c6560; }
+    .doc-table tr { page-break-inside: avoid; }
     @media print {
       .no-print { display: none !important; }
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
