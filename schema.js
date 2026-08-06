@@ -1,4 +1,4 @@
-/** 우미 제안서 워크벤치 — 항목 스키마 (마스터 v9 §9·§10·§4 기반) */
+/** 우미 제안서 워크벤치 — 항목 스키마 (마스터 v11 §9·§10·§4 기반) */
 
 export const STATUS_OPTIONS = ["미정", "포함", "미포함", "해당없음", "차별화카드"];
 export const NATURE_OPTIONS = ["미정", "증여", "대여", "해당없음"];
@@ -14,6 +14,7 @@ export const CHECKLIST_SECTIONS = [
       { id: "a3", item: "착공 후 물가상승 조정 없음", baseline: "2017~ 업계 최고참 표준", nature: false },
       { id: "a4", item: "확정공사비(인상 없음 범위 명시)", baseline: "전사 공통 프레임", nature: false },
       { id: "a5", item: "필수사업비 책임조달 + 금리", baseline: "CD+0%대 이하가 2026 표준선", nature: true },
+      { id: "a6", item: "공사비 지급방식(분양불/기성불) 명시", baseline: "분양불 다수 / DL 기성불(착공후 매2개월) 반례 v11", nature: false },
     ],
   },
   {
@@ -39,8 +40,9 @@ export const CHECKLIST_SECTIONS = [
       { id: "p2", item: "천장고(기준층)", baseline: "2.9~3.0m대 경쟁", nature: false },
       { id: "p3", item: "주차(세대당)·전기차", baseline: "원안↔대안으로 강조", nature: false },
       { id: "p4", item: "특별제공 리스트", baseline: "번호형 17개± 또는 제도형", nature: false },
-      { id: "p5", item: "마감재 브랜드 확정 표기", baseline: "독일창호·주방 국룰 / '~급'만 쓰면 약점", nature: false },
+      { id: "p5", item: "마감재 브랜드 확정 표기", baseline: "확정명 vs '~동등이상' 헤지(v11) / 사업장 티어별 포뮬러 분기", nature: false },
       { id: "p6", item: "분양 방식 고유명칭", baseline: "골든타임 등 + 우미 고유명", nature: false },
+      { id: "p7", item: "마감 티어 포뮬러 선택", baseline: "강남플래그십(独+伊) vs 지방·중견(국내가전+대중프리미엄) v11", nature: false },
     ],
   },
   {
@@ -63,16 +65,17 @@ export const CHECKLIST_SECTIONS = [
       { id: "s2", item: "가전 소유 vs 구독", baseline: "GS·현대", nature: false },
       { id: "s3", item: "선택형(포인트/마감/층)", baseline: "배점·물량 로직이 핵심", nature: false },
       { id: "s4", item: "장기 사후관리", baseline: "품질5년·10년 리뉴얼 등", nature: false },
+      { id: "s5", item: "트렌드업·그레이드업·마이너스옵션", baseline: "2021 현대·DL·한양 공통 패키지(v11 정정)", nature: false },
     ],
   },
   {
     id: "money",
-    title: "6. 금전 혜택 (성격 강제)",
-    hint: "액수만 쓰면 오독 — 증여/대여 필수",
+    title: "6. 금전 혜택 (성격·적법성 강제)",
+    hint: "액수+증여/대여+최신 법령 적법성(v11)",
     rows: [
-      { id: "m1", item: "이사비", baseline: "한양 500만=대여 사례 주의", nature: true },
+      { id: "m1", item: "이사비", baseline: "한양500만=대여 주의 / 성남동1 200만→현재법상불가 주석(v11)", nature: true },
       { id: "m2", item: "사업추진비·촉진비", baseline: "관양 성격 미확인 사례 있음", nature: true },
-      { id: "m3", item: "기타 금전 혜택", baseline: "항목명·금액·성격", nature: true },
+      { id: "m3", item: "기타 금전 혜택", baseline: "항목명·금액·성격·적법성", nature: true },
     ],
   },
   {
@@ -83,7 +86,8 @@ export const CHECKLIST_SECTIONS = [
       { id: "g1", item: "단위 일관(세대당/총액, 평/㎡)", baseline: "혼용 금지", nature: false },
       { id: "g2", item: "PDF 폰트·다수 뷰어 테스트", baseline: "DL 라벨 깨짐 반면교사", nature: false },
       { id: "g3", item: "경쟁사 인용 1차 원문 대조", baseline: "축소인용 방지(롯데 사례)", nature: false },
-      { id: "g4", item: "불리지표 대응 대안지표 세트", baseline: "재무 or 스펙 축 전환", nature: false },
+      { id: "g4", item: "불리지표 대응 대안지표 세트", baseline: "재무/스펙/R&D·특허 축(v11 5번째 공격축)", nature: false },
+      { id: "g5", item: "금전혜택 최신 법령 적법성", baseline: "시점별 지원불가 가능(v11)", nature: false },
     ],
   },
 ];
